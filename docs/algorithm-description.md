@@ -1,0 +1,3 @@
+# `suffixer`
+
+## Algorithm Description

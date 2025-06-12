@@ -1,0 +1,49 @@
+{
+  "name": "suffixer",
+  "version": "1.0.0",
+  "description": "heuristic-based linear-time generalized suffix tree builder with search functionalities",
+  "main": "./dist/easy-data-state.js",
+  "scripts": {
+    "build": "rimraf ./dist && rollup --bundleConfigAsCjs -c ./build/rollup.config.js && copyfiles README.md .npmrc .npmignore ./dist",
+    "performance": "npm run build && node ./test/performance/performance.js",
+    "test": "mocha ./test/**/*.test.js --require @babel/register --timeout 10000",
+    "test:coverage": "c8 --reporter=text npm run test",
+    "dev": "npm test && run-when-changed --watch \"src/**/*.js\" --watch \"test/**/*.js\" --exec \"npm test\"",
+    "dev:coverage": "npm run test:coverage && run-when-changed --watch \"src/**/*.js\" --watch \"test/**/*.js\" --exec \"npm run test:coverage\""
+  },
+  "author": "Dmitriy A. Nesterkin",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aptivator/suffixer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aptivator/suffixer/issues"
+  },
+  "devDependencies": {
+    "@babel/cli": "~7.20.7",
+    "@babel/core": "~7.20.7",
+    "@babel/node": "~7.20.7",
+    "@babel/plugin-transform-modules-umd": "^7.25.9",
+    "@babel/preset-env": "~7.20.2",
+    "@babel/register": "~7.18.9",
+    "@rollup/plugin-babel": "~6.0.3",
+    "babel-node": "^0.0.1-security",
+    "c8": "^7.12.0",
+    "chai": "~4.3.7",
+    "chalk": "^4.1.2",
+    "copyfiles": "~2.4.1",
+    "lodash.pick": "^4.4.0",
+    "mocha": "~10.2.0",
+    "rimraf": "^3.0.2",
+    "rollup": "~3.8.0",
+    "rollup-plugin-generate-package-json": "~3.2.0",
+    "run-when-changed": "~2.1.0"
+  },
+  "dependencies": {
+    "core-js": "^3.40.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
