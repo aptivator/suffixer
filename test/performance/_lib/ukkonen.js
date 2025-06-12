@@ -1,3 +1,5 @@
+//taken from https://github.com/aziztitu/suffix-tree-demo
+
 class SuffixTree {
   constructor() {
     this.text = '';
@@ -17,10 +19,6 @@ class SuffixTree {
 
   addStrings(strings) {
     for(let i = 0, {length} = strings; i < length; i++) {
-      if(i % 10000 === 0) {
-        console.log('added', i);
-      }
-
       this.addString(strings[i]);
     }
   }
