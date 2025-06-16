@@ -1,3 +1,5 @@
+import {baseNewLeafInfo, newLeafInfo} from './_lib/vars';
+
 export class Suffixer {
   #configs = {returnStrings: true, includeIndices: true};
   root = {c: new Map()};
@@ -29,70 +31,77 @@ export class Suffixer {
     Object.assign(this.#configs, configs);
   }
 
-  #getLeafInfo(node, strId, nodeChKey, chIndex) {
-    let equalities = 0;
-    let equalitiesWithinNode;
+  #getLeafInfo(node, strId, chIndex, leafInfo = baseNewLeafInfo) {
+    let nodeChKey = this.strings[strId][chIndex];
+    let leavesToAdd = 0;
+    let offsetWithinNode = 0;
     let nodeChKeyIndex = chIndex;
+    let chEntry = node.c.get(nodeChKey);
 
-    main:
-    while(true) {
-      let chEntry = node.c.get(nodeChKey);
+    if(chEntry) {
+      main:
+      while(true) {
+        chIndex++;
+        offsetWithinNode = 1;
 
-      chIndex++;
-      equalitiesWithinNode = 1;
-
-      if(chEntry.length) {
-        let edgeStrId = chEntry[0];
-        let start = chEntry[1];
-        let end = chEntry[2];
-        var child = chEntry[3];
-  
-        for(var edgeChIndex = start + 1; edgeChIndex < end; edgeChIndex++, chIndex++) {
-          if(this.strings[edgeStrId][edgeChIndex] !== this.strings[strId][chIndex]) {
-            break main;
+        if(chEntry.length) {
+          let edgeStrId = chEntry[0];
+          let start = chEntry[1];
+          let end = chEntry[2];
+          var child = chEntry[3];
+    
+          for(var edgeChIndex = start + 1; edgeChIndex < end; edgeChIndex++, chIndex++) {
+            if(this.strings[edgeStrId][edgeChIndex] !== this.strings[strId][chIndex]) {
+              break main;
+            }
+    
+            offsetWithinNode++;
           }
-  
-          equalitiesWithinNode++;
-        }
-      } else {
-        child = chEntry;
-      }
-
-      if(typeof child !== 'number') {
-        equalities += equalitiesWithinNode;
-        nodeChKey = this.strings[strId][chIndex];
-        nodeChKeyIndex = chIndex;
-        equalitiesWithinNode = 0;
-        node = child;
-
-        if(nodeChKey && node.c?.has(nodeChKey)) {
-          continue;
+        } else {
+          child = chEntry;
         }
 
-        nodeChKey = undefined;
-        nodeChKeyIndex = undefined;
-      }
+        if(typeof child !== 'number') {
+          leavesToAdd += offsetWithinNode;
+          nodeChKey = this.strings[strId][chIndex];
+          nodeChKeyIndex = chIndex;
+          offsetWithinNode = 0;
+          node = child;
 
-      break;
+          if(nodeChKey && (chEntry = node.c?.get(nodeChKey))) {
+            continue;
+          }
+
+          nodeChKey = undefined;
+          nodeChKeyIndex = undefined;
+        }
+
+        break;
+      }
+    } else {
+      leavesToAdd = 1;
     }
 
-    return {
-      node,
-      nodeChKey,
-      nodeChKeyIndex,
-      unmatchedCh: this.strings[strId][chIndex],
-      unmatchedChIndex: chIndex,
-      edgeCh: nodeChKey && this.strings[node.c.get(nodeChKey)[0]][edgeChIndex],
-      equalities: equalities + equalitiesWithinNode,
-      equalitiesWithinNode
-    };
+    leafInfo.node = node;
+    leafInfo.nodeChKey = nodeChKey;
+    leafInfo.nodeChKeyIndex = nodeChKeyIndex;
+    leafInfo.unmatchedCh = this.strings[strId][chIndex];
+    leafInfo.unmatchedChIndex = chIndex;
+    leafInfo.leavesToAdd = leavesToAdd + offsetWithinNode;
+    leafInfo.offsetWithinNode = offsetWithinNode;
+
+    if(offsetWithinNode && nodeChKey) {
+      leafInfo.edgeCh = this.strings[node.c.get(nodeChKey)[0]][edgeChIndex];
+    }
+
+    return leafInfo;
   }
 
-  #updateLeafInfo(startLeafInfo, strId) {
-    let {node, nodeChKey, nodeChKeyIndex, equalitiesWithinNode} = startLeafInfo;
-    let {unmatchedCh, unmatchedChIndex} = startLeafInfo;
+  #updateLeafInfo(strId) {
+    let {node, nodeChKey, nodeChKeyIndex, offsetWithinNode} = baseNewLeafInfo;
+    let {unmatchedCh, unmatchedChIndex} = baseNewLeafInfo;
 
-    while(equalitiesWithinNode) {
+    while(offsetWithinNode) {
       let child = node.c.get(nodeChKey);
       let chRange = 1;
 
@@ -101,47 +110,47 @@ export class Suffixer {
         child = child[3];
       }
 
-      if(chRange < equalitiesWithinNode) {
+      if(chRange < offsetWithinNode) {
         node = child;
         nodeChKeyIndex += chRange;
         nodeChKey = this.strings[strId][nodeChKeyIndex];
-        equalitiesWithinNode -= chRange;
+        offsetWithinNode -= chRange;
         continue;
       }
 
-      if(equalitiesWithinNode === chRange && typeof child !== 'number') {
+      if(offsetWithinNode === chRange && typeof child !== 'number') {
         node = child;
-        equalitiesWithinNode = 0;    
+        offsetWithinNode = 0;    
       }
 
       break;
     }
 
-    startLeafInfo.node = node;
-    startLeafInfo.nodeChKey = nodeChKey;
-    startLeafInfo.nodeChKeyIndex = nodeChKeyIndex;
-    startLeafInfo.equalitiesWithinNode = equalitiesWithinNode;
+    baseNewLeafInfo.node = node;
+    baseNewLeafInfo.nodeChKey = nodeChKey;
+    baseNewLeafInfo.nodeChKeyIndex = nodeChKeyIndex;
+    baseNewLeafInfo.offsetWithinNode = offsetWithinNode;
 
-    if(equalitiesWithinNode || !node.c?.has(unmatchedCh)) {
-      return startLeafInfo;
+    if(offsetWithinNode || !node.c?.has(unmatchedCh)) {
+      return baseNewLeafInfo;
     }
     
-    startLeafInfo = this.#getLeafInfo(node, strId, unmatchedCh, unmatchedChIndex);
-    startLeafInfo.linkNode = node;
-    return startLeafInfo;
+    this.#getLeafInfo(node, strId, unmatchedChIndex, newLeafInfo);
+    newLeafInfo.linkNode = node;
+    return newLeafInfo;
   }
 
   #addLeaf(leafInfo, strId, chIndex, strLength) {
-    let {equalitiesWithinNode, node, linkNode} = leafInfo;
+    let {offsetWithinNode, node, linkNode} = leafInfo;
     let {unmatchedCh, unmatchedChIndex} = leafInfo;
     let child = node;
 
-    if(equalitiesWithinNode) {
+    if(offsetWithinNode) {
       let {nodeChKey, edgeCh} = leafInfo;
       let chEntry = node.c.get(nodeChKey);
       let edgeStrId = chEntry[0];
       let start = chEntry[1];
-      let newStart = start + equalitiesWithinNode;
+      let newStart = start + offsetWithinNode;
 
       child = {};
 
@@ -180,15 +189,14 @@ export class Suffixer {
     return linkNode || child;
   }
 
-  #matchAndAddLeaves(strId, ch, chIndex, strLength) {
-    let startLeafInfo = this.#getLeafInfo(this.root, strId, ch, chIndex);
-    let {equalities} = startLeafInfo;
-    let nextChIndex = chIndex + equalities;
-    let leafInfo = startLeafInfo;
+  #matchAndAddLeaves(strId, chIndex, strLength) {
+    let newLeafInfo = this.#getLeafInfo(this.root, strId, chIndex);
+    let {leavesToAdd} = newLeafInfo;
+    let nextChIndex = chIndex + leavesToAdd;
     let prevInternalNode;
-
-    while(equalities) {
-      let linkNode = this.#addLeaf(leafInfo, strId, chIndex, strLength);
+    
+    while(leavesToAdd) {
+      let linkNode = this.#addLeaf(newLeafInfo, strId, chIndex, strLength);
 
       if(prevInternalNode) {
         prevInternalNode.l = linkNode;
@@ -196,21 +204,21 @@ export class Suffixer {
 
       prevInternalNode = linkNode;
 
-      if(--equalities) {
-        let {node} = startLeafInfo;
+      if(--leavesToAdd) {
+        let {node} = baseNewLeafInfo;
 
         chIndex++;
 
         if(node.l) {
-          startLeafInfo.node = node.l;
+          baseNewLeafInfo.node = node.l;
         } else {
-          startLeafInfo.node = this.root;
-          startLeafInfo.nodeChKey = this.strings[strId][chIndex];
-          startLeafInfo.nodeChKeyIndex = chIndex;
-          startLeafInfo.equalitiesWithinNode = equalities;
+          baseNewLeafInfo.node = this.root;
+          baseNewLeafInfo.nodeChKey = this.strings[strId][chIndex];
+          baseNewLeafInfo.nodeChKeyIndex = chIndex;
+          baseNewLeafInfo.offsetWithinNode = leavesToAdd;
         }
 
-        leafInfo = this.#updateLeafInfo(startLeafInfo, strId);
+        newLeafInfo = this.#updateLeafInfo(strId);
       }
     }
 
@@ -219,25 +227,22 @@ export class Suffixer {
 
   addString(string) {
     let strId = this.strings.push(string) - 1;
-    let {root} = this;
     this.stringIds.push(strId);
 
     for(let chIndex = 0, {length} = string; chIndex < length; ) {
-      let ch = string[chIndex];
-
-      if(root.c.has(ch)) {
-        chIndex = this.#matchAndAddLeaves(strId, ch, chIndex, length);
-        continue;
-      }
-
-      root.c.set(ch, [strId, chIndex, length, chIndex++]);
+      chIndex = this.#matchAndAddLeaves(strId, chIndex, length);
     }
+
+    return strId;
   }
 
   addStrings(strings) {
-    for(let i = 0, {length} = strings; i < length; i++) {
-      this.addString(strings[i]);
+    for(var i = 0, {length} = strings, strIds = []; i < length; i++) {
+      let strId = this.addString(strings[i]);
+      strIds.push(strId);
     }
+
+    return strIds;
   }
 
   #getPatternNodeInfo(pattern) {

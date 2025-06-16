@@ -39,12 +39,26 @@ describe('Suffix Tree Building', () => {
     });
   });
 
-  describe('suffixes', () => {
-    it('adds multiple strings to a suffix tree', () => {
-      tree.addStrings(wordsShuffled5000);
-      expect(tree.strings).to.eql(wordsShuffled5000);
+  describe('addString()', () => {
+    it('adds a string to a suffix tree and returns an id of that string', () => {
+      let tree = new Suffixer(wordsShuffled5000);
+      let string = 'somerandomstring'
+      let strId = tree.addString(string);
+      expect(tree.strings[strId]).to.equal(string);
+      expect(strId).to.equal(wordsShuffled5000.length);
     });
-  
+  });
+
+  describe('addStrings()', () => {
+    it('adds multiple strings to a suffix tree and returns ids of theses strings', () => {
+      let ids = tree.addStrings(wordsShuffled5000);
+      let expectedIds = Array(wordsShuffled5000.length).fill(0).map((value, index) => index);
+      expect(tree.strings).to.eql(wordsShuffled5000);
+      expect(ids).to.eql(expectedIds);
+    });
+  });
+
+  describe('suffixes', () => {
     it('contains all suffixes of the added strings', () => {
       let {strings} = tree;
   
