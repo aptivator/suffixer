@@ -31,7 +31,7 @@ export class Suffixer {
     Object.assign(this.#configs, configs);
   }
 
-  #getLeafInfo(node, strId, chIndex, leafInfo = baseNewLeafInfo) {
+  #getNewLeafInfo(node, strId, chIndex, leafInfo = baseNewLeafInfo) {
     let nodeChKey = this.strings[strId][chIndex];
     let leavesToAdd = 0;
     let offsetWithinNode = 0;
@@ -101,7 +101,7 @@ export class Suffixer {
     return leafInfo;
   }
 
-  #updateLeafInfo(strId) {
+  #updateNewLeafInfo(strId) {
     let {node, nodeChKey, nodeChKeyIndex, offsetWithinNode} = baseNewLeafInfo;
     let {unmatchedCh, unmatchedChIndex} = baseNewLeafInfo;
 
@@ -144,9 +144,8 @@ export class Suffixer {
       return baseNewLeafInfo;
     }
     
-    this.#getLeafInfo(node, strId, unmatchedChIndex, newLeafInfo);
     newLeafInfo.linkNode = node;
-    return newLeafInfo;
+    return this.#getNewLeafInfo(node, strId, unmatchedChIndex, newLeafInfo);
   }
 
   #addLeaf(leafInfo, strId, chIndex, strLength) {
@@ -198,7 +197,7 @@ export class Suffixer {
   }
 
   #matchAndAddLeaves(strId, chIndex, strLength) {
-    let newLeafInfo = this.#getLeafInfo(this.root, strId, chIndex);
+    let newLeafInfo = this.#getNewLeafInfo(this.root, strId, chIndex);
     let {leavesToAdd} = newLeafInfo;
     let nextChIndex = chIndex + leavesToAdd;
     let prevInternalNode;
@@ -226,7 +225,7 @@ export class Suffixer {
           baseNewLeafInfo.offsetWithinNode = leavesToAdd;
         }
 
-        newLeafInfo = this.#updateLeafInfo(strId);
+        newLeafInfo = this.#updateNewLeafInfo(strId);
       }
     }
 

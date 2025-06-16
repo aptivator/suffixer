@@ -120,13 +120,14 @@ let tree = new Suffixer(strings, configs);
 
 `suffixer` is an online implementation and allows suffix trees to be expanded after
 instantiation.  The library makes available `addString` and `addStrings` methods to
-add a string or an array of string to an already-created tree.
+add a string or an array of string to an already-created tree.  Both functions return
+an identifier or an array of identifiers, respectively, of the added string(s).
 
 *Adding a String to a Suffix Tree*
 ```javascript
 let configs = {includeIndices: false};
 let tree = new Suffixer(configs);
-tree.addString('way');
+let strId = tree.addString('way'); // strId = 0
 ```
 
 *Adding Strings to a Suffix Tree*
@@ -134,7 +135,7 @@ tree.addString('way');
 let configs = {includeIndices: false};
 let strings = ['way', 'ways'];
 let tree = new Suffixer(configs);
-tree.addStrings(strings);
+let strIds = tree.addStrings(strings); // strIds = [0, 1];
 ```
 
 ### Changing Suffix Tree Configurations
