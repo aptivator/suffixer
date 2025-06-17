@@ -10,6 +10,7 @@
   * [Building a Suffix Tree](#building-a-suffix-tree)
     * [Instantiating a Suffix Tree](#instantiating-a-suffix-tree)
     * [Augmenting a Suffix Tree](#augmenting-a-suffix-tree)
+    * [Available Constructor Data](#available-constructor-data)
   * [Changing Suffix Tree Configurations](#changing-suffix-tree-configurations)
   * [Querying a Suffix Tree](#querying-a-suffix-tree)
     * [Selecting Strings that Include a Substring](#selecting-strings-that-include-a-substring)
@@ -139,6 +140,13 @@ let strings = ['way', 'ways'];
 let tree = new Suffixer(configs);
 let strIds = tree.addStrings(strings); // strIds = [0, 1];
 ```
+
+#### Available Constructor Data
+
+Three data can be accessed from a suffix tree instance: `root`, `strings`, and `stringIds`.
+`root` is a root node that is an entry point into a tree.  `strings` is an array of all texts
+composing a suffix tree.  `stringIds` are internal identifiers of entered strings and are
+primarily used by `excludes()` method.
 
 ### Changing Suffix Tree Configurations
 
@@ -326,9 +334,10 @@ feature is modified.
 
 ### Potential New Features
 
-Suffix trees can be used for a wide variety of applications such as compression, least
+Suffix trees can be used for a wide variety of applications such as text compression, least
 common extension, string approximation, and suffix array construction to name a few.  Over
-time some of these features will be added.
+time some of these features will be added.  Perhaps a useful tree construction feature to
+have is an on-demand removal of a string(s) from a suffix tree.
 
 ## Implementation Details
 
