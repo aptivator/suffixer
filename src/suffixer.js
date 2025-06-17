@@ -182,8 +182,7 @@ export class Suffixer {
 
         child.c = new Map().set(edgeCh, chEntry);
       } else {
-        let chIndex = chEntry[3];
-        child.e = new Map().set(edgeStrId, chIndex);
+        child.e = new Map().set(edgeStrId, chEntry[3]);
       }
     }
 
