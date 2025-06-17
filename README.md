@@ -80,9 +80,11 @@ the EcmaScript 5 distributable is available from `suffixer\es5`.
 string or an array of strings that will compose a suffix tree.  `Suffixer()` can also be
 called with configurations that affect how query results are presented.  Two settings
 are available: `returnStrings` and `includeIndices`.  Both of these are `true` by default.
-Setting `returnStrings` to `false` will return a string identifier.  `includeIndices` as
-`false` instructs `suffixer` to exclude string indices at which a matched search string
-begins.
+Setting `returnStrings` to `false` directs to  return a string identifier.  `includeIndices`
+ as `false` instructs `suffixer` to exclude string indices at which a matched search string
+begins.  Some use cases may require associating extra information to strings that are in a
+suffix tree.  Such linkages could be more efficient to operationalize using an integer
+identifier versus a full text.
 
 *Instantiating a Blank Suffix Tree*
 ```javascript
