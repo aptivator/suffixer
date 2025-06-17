@@ -34,41 +34,41 @@ export class Suffixer {
   #getNewLeafInfo(node, strId, chIndex, leafInfo = baseNewLeafInfo) {
     let nodeChKey = this.strings[strId][chIndex];
     let leavesToAdd = 0;
-    let offsetWithinNode = 0;
+    let offsetWithinEdge = 0;
     let nodeChKeyIndex = chIndex;
-    let chEntry = node.c.get(nodeChKey);
+    let edge = node.c.get(nodeChKey);
 
-    if(chEntry) {
+    if(edge) {
       main:
       while(true) {
         chIndex++;
-        offsetWithinNode = 1;
+        offsetWithinEdge = 1;
 
-        if(chEntry.length) {
-          let edgeStrId = chEntry[0];
-          let start = chEntry[1];
-          let end = chEntry[2];
-          var child = chEntry[3];
+        if(edge.length) {
+          let edgeStrId = edge[0];
+          let start = edge[1];
+          let end = edge[2];
+          var child = edge[3];
     
           for(var edgeChIndex = start + 1; edgeChIndex < end; edgeChIndex++, chIndex++) {
             if(this.strings[edgeStrId][edgeChIndex] !== this.strings[strId][chIndex]) {
               break main;
             }
     
-            offsetWithinNode++;
+            offsetWithinEdge++;
           }
         } else {
-          child = chEntry;
+          child = edge;
         }
 
         if(typeof child !== 'number') {
-          leavesToAdd += offsetWithinNode;
+          leavesToAdd += offsetWithinEdge;
           nodeChKey = this.strings[strId][chIndex];
           nodeChKeyIndex = chIndex;
-          offsetWithinNode = 0;
+          offsetWithinEdge = 0;
           node = child;
 
-          if(nodeChKey && (chEntry = node.c?.get(nodeChKey))) {
+          if(nodeChKey && (edge = node.c?.get(nodeChKey))) {
             continue;
           }
 
@@ -85,11 +85,11 @@ export class Suffixer {
     leafInfo.node = node;
     leafInfo.unmatchedCh = this.strings[strId][chIndex];
     leafInfo.unmatchedChIndex = chIndex;
-    leafInfo.leavesToAdd = leavesToAdd + offsetWithinNode;
-    leafInfo.offsetWithinNode = offsetWithinNode;
+    leafInfo.leavesToAdd = leavesToAdd + offsetWithinEdge;
+    leafInfo.offsetWithinEdge = offsetWithinEdge;
 
-    if(offsetWithinNode) {
-      leafInfo.chEntry = chEntry;
+    if(offsetWithinEdge) {
+      leafInfo.edge = edge;
       leafInfo.nodeChKey = nodeChKey;
       leafInfo.nodeChKeyIndex = nodeChKeyIndex;
 
@@ -102,41 +102,41 @@ export class Suffixer {
   }
 
   #updateNewLeafInfo(strId) {
-    let {node, nodeChKey, nodeChKeyIndex, offsetWithinNode} = baseNewLeafInfo;
+    let {node, nodeChKey, nodeChKeyIndex, offsetWithinEdge} = baseNewLeafInfo;
     let {unmatchedCh, unmatchedChIndex} = baseNewLeafInfo;
 
-    while(offsetWithinNode) {
-      var chEntry = node.c.get(nodeChKey);
-      let child = chEntry;
-      let chRange = 1;
+    while(offsetWithinEdge) {
+      var edge = node.c.get(nodeChKey);
+      let child = edge;
+      let edgeLength = 1;
 
       if(child.length) {
-        chRange = child[2] - child[1];
+        edgeLength = child[2] - child[1];
         child = child[3];
       }
 
-      if(chRange < offsetWithinNode) {
+      if(edgeLength < offsetWithinEdge) {
         node = child;
-        nodeChKeyIndex += chRange;
+        nodeChKeyIndex += edgeLength;
         nodeChKey = this.strings[strId][nodeChKeyIndex];
-        offsetWithinNode -= chRange;
+        offsetWithinEdge -= edgeLength;
         continue;
       }
 
-      if(offsetWithinNode === chRange && typeof child !== 'number') {
+      if(offsetWithinEdge === edgeLength && typeof child !== 'number') {
         node = child;
-        offsetWithinNode = 0;    
+        offsetWithinEdge = 0;    
       }
 
       break;
     }
 
-    if(offsetWithinNode || !node.c?.has(unmatchedCh)) {
+    if(offsetWithinEdge || !node.c?.has(unmatchedCh)) {
       baseNewLeafInfo.node = node;
-      baseNewLeafInfo.offsetWithinNode = offsetWithinNode;
+      baseNewLeafInfo.offsetWithinEdge = offsetWithinEdge;
 
-      if(offsetWithinNode) {
-        baseNewLeafInfo.chEntry = chEntry;
+      if(offsetWithinEdge) {
+        baseNewLeafInfo.edge = edge;
         baseNewLeafInfo.nodeChKey = nodeChKey;
         baseNewLeafInfo.nodeChKeyIndex = nodeChKeyIndex;
       }
@@ -149,15 +149,15 @@ export class Suffixer {
   }
 
   #addLeaf(leafInfo, strId, chIndex, strLength) {
-    let {offsetWithinNode, node, linkNode} = leafInfo;
+    let {offsetWithinEdge, node, linkNode} = leafInfo;
     let {unmatchedCh, unmatchedChIndex} = leafInfo;
     let child = node;
 
-    if(offsetWithinNode) {
-      let {nodeChKey, edgeCh, chEntry} = leafInfo;
-      let edgeStrId = chEntry[0];
-      let start = chEntry[1];
-      let newStart = start + offsetWithinNode;
+    if(offsetWithinEdge) {
+      let {nodeChKey, edgeCh, edge} = leafInfo;
+      let edgeStrId = edge[0];
+      let start = edge[1];
+      let newStart = start + offsetWithinEdge;
 
       child = {};
 
@@ -168,21 +168,21 @@ export class Suffixer {
       }
 
       if(edgeCh) {
-        if(chEntry[2] - newStart === 1) {
-          let child = chEntry[3];
+        if(edge[2] - newStart === 1) {
+          let child = edge[3];
 
           if(typeof child !== 'number') {
-            chEntry = child;
+            edge = child;
           }
         }
 
-        if(chEntry.length) {
-          chEntry[1] = newStart;
+        if(edge.length) {
+          edge[1] = newStart;
         }
 
-        child.c = new Map().set(edgeCh, chEntry);
+        child.c = new Map().set(edgeCh, edge);
       } else {
-        child.e = new Map().set(edgeStrId, chEntry[3]);
+        child.e = new Map().set(edgeStrId, edge[3]);
       }
     }
 
@@ -221,7 +221,7 @@ export class Suffixer {
           baseNewLeafInfo.node = this.root;
           baseNewLeafInfo.nodeChKey = this.strings[strId][chIndex];
           baseNewLeafInfo.nodeChKeyIndex = chIndex;
-          baseNewLeafInfo.offsetWithinNode = leavesToAdd;
+          baseNewLeafInfo.offsetWithinEdge = leavesToAdd;
         }
 
         newLeafInfo = this.#updateNewLeafInfo(strId);
@@ -256,18 +256,18 @@ export class Suffixer {
 
     for(let i = 0, {length} = pattern; true; ) {
       let ch = pattern[i++];
-      let chEntry = node.c?.get(ch);
+      let edge = node.c?.get(ch);
 
-      if(chEntry) {
+      if(edge) {
         let uncoveredChs = 0;
 
-        if(chEntry.length) {
-          let edgeStrId = chEntry[0];
-          let start = chEntry[1];
-          let end = chEntry[2];
+        if(edge.length) {
+          let edgeStrId = edge[0];
+          let start = edge[1];
+          let end = edge[2];
           
           uncoveredChs = end - start - 1;
-          var child = chEntry[3];
+          var child = edge[3];
   
           for(let j = start + 1; j < end && i < length; j++, i++) {
             if(this.strings[edgeStrId][j] !== pattern[i]) {
@@ -277,7 +277,7 @@ export class Suffixer {
             uncoveredChs--;
           }
         } else {
-          child = chEntry;
+          child = edge;
         }
 
         if(i < length) {
@@ -286,7 +286,7 @@ export class Suffixer {
         }
 
         return {
-          chEntry,
+          edge,
           child,
           uncoveredChs
         };
@@ -348,12 +348,12 @@ export class Suffixer {
     return this.#getPatternNodeAndInvoke(pattern, this.#endsWith, configs);
   }
 
-  #endsWith({chEntry, child, uncoveredChs}) {
+  #endsWith({edge, child, uncoveredChs}) {
     let results = [];
 
     if(!uncoveredChs) {
       if(typeof child === 'number') {
-        results.push([chEntry[0], child]);
+        results.push([edge[0], child]);
       } else {
         results = [...child.e.entries()];
       }
@@ -366,12 +366,12 @@ export class Suffixer {
     return this.#getPatternNodeAndInvoke(pattern, this.#equals, configs);
   }
 
-  #equals({chEntry, child, uncoveredChs}) {
+  #equals({edge, child, uncoveredChs}) {
     let results = [];
 
     if(!uncoveredChs) {
       if(typeof child === 'number') {
-        results.push(chEntry[0]);
+        results.push(edge[0]);
       } else {
         child.e.forEach((chIndex, strId) => {
           if(chIndex === 0) {
@@ -410,17 +410,17 @@ export class Suffixer {
       let node = nodeInfo[0];
       let nodeDepth = nodeInfo[1];
 
-      node.c.forEach((chEntry) => {
-        if(chEntry.length) {
-          let child = chEntry[3];
+      node.c.forEach((edge) => {
+        if(edge.length) {
+          let child = edge[3];
 
           if(child.c) {
-            let chRange = chEntry[2] - chEntry[1];
-            let currentDepth = nodeDepth + chRange;
+            let edgeLength = edge[2] - edge[1];
+            let currentDepth = nodeDepth + edgeLength;
             frames.push([child, currentDepth]);
           }
-        } else if(chEntry.c) {
-          frames.push([chEntry, nodeDepth + 1]);
+        } else if(edge.c) {
+          frames.push([edge, nodeDepth + 1]);
         }
       });
 
@@ -445,15 +445,15 @@ export class Suffixer {
     for(let nodeInfo; nodeInfo = frames.shift();) {
       let node = nodeInfo[0];
       
-      node.c.forEach((chEntry, common) => {
+      node.c.forEach((edge, common) => {
         let parent = nodeInfo[1];
         let fullCommon = (parent?.common || '');
  
-        if(chEntry.length) {
-          var [strId, start, end, child] = chEntry;
+        if(edge.length) {
+          var [strId, start, end, child] = edge;
           common = this.strings[strId].slice(start, end);
         } else {
-          child = chEntry;
+          child = edge;
         }
 
         fullCommon += common;
@@ -532,7 +532,7 @@ export class Suffixer {
         let string = this.strings[0];
 
         deepestNode.e?.forEach((index) => indices.push(index));
-        deepestNode.c.forEach((chEntry) => indices.push(chEntry[3]));
+        deepestNode.c.forEach((edge) => indices.push(edge[3]));
 
         return {
           indices,
@@ -550,11 +550,11 @@ export class Suffixer {
     return this.#getPatternNodeAndInvoke(pattern, this.#includes, configs);
   }
 
-  #includes({chEntry, child}) {
+  #includes({edge, child}) {
     let results = {};
 
     if(typeof child === 'number') {
-      results[chEntry[0]] = [child];
+      results[edge[0]] = [child];
     } else {
       let frames = [];
       
@@ -563,10 +563,10 @@ export class Suffixer {
           (results[strId] ??= []).push(chIndex);
         });
 
-        child.c?.forEach((chEntry) => {
-          if(chEntry.length) {
-            let strId = chEntry[0];
-            let child = chEntry[3];
+        child.c?.forEach((edge) => {
+          if(edge.length) {
+            let strId = edge[0];
+            let child = edge[3];
   
             if(typeof child === 'number') {
               (results[strId] ??= []).push(child);
@@ -574,7 +574,7 @@ export class Suffixer {
               frames.push(child);
             }
           } else {
-            frames.push(chEntry);
+            frames.push(edge);
           }
         });
       } while((child = frames.shift()));
@@ -590,12 +590,12 @@ export class Suffixer {
     return this.#getPatternNodeAndInvoke(pattern, this.#startsWith, configs);
   }
 
-  #startsWith({chEntry, child}) {
+  #startsWith({edge, child}) {
     let results = [];
 
     if(typeof child === 'number') {
       if(child === 0) {
-        results.push(chEntry[0]);
+        results.push(edge[0]);
       }
     } else {
       let frames = [];
@@ -607,10 +607,10 @@ export class Suffixer {
           }
         });
 
-        child.c?.forEach((chEntry) => {
-          if(chEntry.length) {
-            let strId = chEntry[0];
-            let child = chEntry[3];
+        child.c?.forEach((edge) => {
+          if(edge.length) {
+            let strId = edge[0];
+            let child = edge[3];
   
             if(typeof child === 'number') {
               if(child === 0) {
@@ -620,7 +620,7 @@ export class Suffixer {
               frames.push(child);
             }
           } else {
-            frames.push(chEntry);
+            frames.push(edge);
           }
         });
       } while((child = frames.shift()));
