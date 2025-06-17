@@ -131,16 +131,16 @@ export class Suffixer {
       break;
     }
 
-    baseNewLeafInfo.node = node;
-    baseNewLeafInfo.offsetWithinNode = offsetWithinNode;
-
-    if(offsetWithinNode) {
-      baseNewLeafInfo.chEntry = chEntry;
-      baseNewLeafInfo.nodeChKey = nodeChKey;
-      baseNewLeafInfo.nodeChKeyIndex = nodeChKeyIndex;
-    }
-
     if(offsetWithinNode || !node.c?.has(unmatchedCh)) {
+      baseNewLeafInfo.node = node;
+      baseNewLeafInfo.offsetWithinNode = offsetWithinNode;
+
+      if(offsetWithinNode) {
+        baseNewLeafInfo.chEntry = chEntry;
+        baseNewLeafInfo.nodeChKey = nodeChKey;
+        baseNewLeafInfo.nodeChKeyIndex = nodeChKeyIndex;
+      }
+      
       return baseNewLeafInfo;
     }
     
