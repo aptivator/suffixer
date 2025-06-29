@@ -35,7 +35,6 @@ export class Suffixer {
     let edgeKey = this.strings[strId][chIndex];
     let leavesToAdd = 0;
     let offsetWithinEdge = 0;
-    let edgeKeyIndex = chIndex;
     let edge = node.e.get(edgeKey);
 
     if(edge) {
@@ -62,9 +61,9 @@ export class Suffixer {
         }
 
         if(typeof child !== 'number') {
+          var edgeKeyIndex = chIndex;
           leavesToAdd += offsetWithinEdge;
           edgeKey = this.strings[strId][chIndex];
-          edgeKeyIndex = chIndex;
           offsetWithinEdge = 0;
           node = child;
 
