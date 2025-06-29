@@ -14,7 +14,7 @@ describe('Suffix Tree Building Testing Utilities', () => {
 
     it('produces the deepest node with link plus the number of characters traversed to reach it', () => {
       let [node, depth] = findDeepestNodeWithLink(tree, 'plush');
-      expect(node.l).to.equal(tree.root.c.get('p').c.get('l')[3].l);
+      expect(node.l).to.equal(tree.root.e.get('p').e.get('l')[3].l);
       expect(depth).to.equal(4);
     })
   });
@@ -39,10 +39,10 @@ describe('Suffix Tree Building Testing Utilities', () => {
       let suffix = 'ush';
       let {length: suffixLength} = suffix;
       let suffixesInfo = getSuffixInfo(tree, suffix);
-      let {e} = suffixesInfo;
+      let {$} = suffixesInfo;
       expect(suffixesInfo.constructor).to.equal(Object);
-      expect(e.get(1)).to.equal(strings[1].length - suffixLength);
-      expect(e.get(2)).to.equal(strings[2].length - suffixLength);
+      expect($.get(1)).to.equal(strings[1].length - suffixLength);
+      expect($.get(2)).to.equal(strings[2].length - suffixLength);
     });
 
     it('allows specifying starting node', () => {

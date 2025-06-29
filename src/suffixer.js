@@ -2,7 +2,7 @@ import {baseNewLeafInfo, newLeafInfo} from './_lib/vars';
 
 export class Suffixer {
   #configs = {returnStrings: true, includeIndices: true};
-  root = {c: new Map()};
+  root = {e: new Map()};
   stringIds = [];
   strings = [];
   
@@ -32,11 +32,11 @@ export class Suffixer {
   }
 
   #getNewLeafInfo(node, strId, chIndex, leafInfo = baseNewLeafInfo) {
-    let nodeChKey = this.strings[strId][chIndex];
+    let edgeKey = this.strings[strId][chIndex];
     let leavesToAdd = 0;
     let offsetWithinEdge = 0;
-    let nodeChKeyIndex = chIndex;
-    let edge = node.c.get(nodeChKey);
+    let edgeKeyIndex = chIndex;
+    let edge = node.e.get(edgeKey);
 
     if(edge) {
       main:
@@ -63,17 +63,17 @@ export class Suffixer {
 
         if(typeof child !== 'number') {
           leavesToAdd += offsetWithinEdge;
-          nodeChKey = this.strings[strId][chIndex];
-          nodeChKeyIndex = chIndex;
+          edgeKey = this.strings[strId][chIndex];
+          edgeKeyIndex = chIndex;
           offsetWithinEdge = 0;
           node = child;
 
-          if(nodeChKey && (edge = node.c?.get(nodeChKey))) {
+          if(edgeKey && (edge = node.e?.get(edgeKey))) {
             continue;
           }
 
-          nodeChKey = undefined;
-          nodeChKeyIndex = undefined;
+          edgeKey = undefined;
+          edgeKeyIndex = undefined;
         }
 
         break;
@@ -90,11 +90,11 @@ export class Suffixer {
 
     if(offsetWithinEdge) {
       leafInfo.edge = edge;
-      leafInfo.nodeChKey = nodeChKey;
-      leafInfo.nodeChKeyIndex = nodeChKeyIndex;
+      leafInfo.edgeKey = edgeKey;
+      leafInfo.edgeKeyIndex = edgeKeyIndex;
 
-      if(nodeChKey) {
-        leafInfo.edgeCh = this.strings[node.c.get(nodeChKey)[0]][edgeChIndex];
+      if(edgeKey) {
+        leafInfo.unmatchedEdgeCh = this.strings[node.e.get(edgeKey)[0]][edgeChIndex];
       }
     }
 
@@ -102,11 +102,11 @@ export class Suffixer {
   }
 
   #updateNewLeafInfo(strId) {
-    let {node, nodeChKey, nodeChKeyIndex, offsetWithinEdge} = baseNewLeafInfo;
+    let {node, edgeKey, edgeKeyIndex, offsetWithinEdge} = baseNewLeafInfo;
     let {unmatchedCh, unmatchedChIndex} = baseNewLeafInfo;
 
     while(offsetWithinEdge) {
-      var edge = node.c.get(nodeChKey);
+      var edge = node.e.get(edgeKey);
       let child = edge;
       let edgeLength = 1;
 
@@ -117,8 +117,8 @@ export class Suffixer {
 
       if(edgeLength < offsetWithinEdge) {
         node = child;
-        nodeChKeyIndex += edgeLength;
-        nodeChKey = this.strings[strId][nodeChKeyIndex];
+        edgeKeyIndex += edgeLength;
+        edgeKey = this.strings[strId][edgeKeyIndex];
         offsetWithinEdge -= edgeLength;
         continue;
       }
@@ -131,14 +131,14 @@ export class Suffixer {
       break;
     }
 
-    if(offsetWithinEdge || !node.c?.has(unmatchedCh)) {
+    if(offsetWithinEdge || !node.e?.has(unmatchedCh)) {
       baseNewLeafInfo.node = node;
       baseNewLeafInfo.offsetWithinEdge = offsetWithinEdge;
 
       if(offsetWithinEdge) {
         baseNewLeafInfo.edge = edge;
-        baseNewLeafInfo.nodeChKey = nodeChKey;
-        baseNewLeafInfo.nodeChKeyIndex = nodeChKeyIndex;
+        baseNewLeafInfo.edgeKey = edgeKey;
+        baseNewLeafInfo.edgeKeyIndex = edgeKeyIndex;
       }
       
       return baseNewLeafInfo;
@@ -154,7 +154,7 @@ export class Suffixer {
     let child = node;
 
     if(offsetWithinEdge) {
-      let {nodeChKey, edgeCh, edge} = leafInfo;
+      let {edgeKey, unmatchedEdgeCh, edge} = leafInfo;
       let edgeStrId = edge[0];
       let start = edge[1];
       let newStart = start + offsetWithinEdge;
@@ -162,12 +162,12 @@ export class Suffixer {
       child = {};
 
       if(newStart - start === 1) {
-        node.c.set(nodeChKey, child);
+        node.e.set(edgeKey, child);
       } else {
-        node.c.set(nodeChKey, [edgeStrId, start, newStart, child]);
+        node.e.set(edgeKey, [edgeStrId, start, newStart, child]);
       }
 
-      if(edgeCh) {
+      if(unmatchedEdgeCh) {
         if(edge[2] - newStart === 1) {
           let child = edge[3];
 
@@ -180,16 +180,16 @@ export class Suffixer {
           edge[1] = newStart;
         }
 
-        child.c = new Map().set(edgeCh, edge);
+        child.e = new Map().set(unmatchedEdgeCh, edge);
       } else {
-        child.e = new Map().set(edgeStrId, edge[3]);
+        child.$ = new Map().set(edgeStrId, edge[3]);
       }
     }
 
     if(unmatchedCh) {
-      (child.c ??= new Map()).set(unmatchedCh, [strId, unmatchedChIndex, strLength, chIndex]);
+      (child.e ??= new Map()).set(unmatchedCh, [strId, unmatchedChIndex, strLength, chIndex]);
     } else {
-      (child.e ??= new Map()).set(strId, chIndex);
+      (child.$ ??= new Map()).set(strId, chIndex);
     }
 
     return linkNode || child;
@@ -219,8 +219,8 @@ export class Suffixer {
           baseNewLeafInfo.node = node.l;
         } else {
           baseNewLeafInfo.node = this.root;
-          baseNewLeafInfo.nodeChKey = this.strings[strId][chIndex];
-          baseNewLeafInfo.nodeChKeyIndex = chIndex;
+          baseNewLeafInfo.edgeKey = this.strings[strId][chIndex];
+          baseNewLeafInfo.edgeKeyIndex = chIndex;
           baseNewLeafInfo.offsetWithinEdge = leavesToAdd;
         }
 
@@ -256,7 +256,7 @@ export class Suffixer {
 
     for(let i = 0, {length} = pattern; true; ) {
       let ch = pattern[i++];
-      let edge = node.c?.get(ch);
+      let edge = node.e?.get(ch);
 
       if(edge) {
         let uncoveredChs = 0;
@@ -355,7 +355,7 @@ export class Suffixer {
       if(typeof child === 'number') {
         results.push([edge[0], child]);
       } else {
-        results = [...child.e.entries()];
+        results = [...child.$.entries()];
       }
     }
 
@@ -373,7 +373,7 @@ export class Suffixer {
       if(typeof child === 'number') {
         results.push(edge[0]);
       } else {
-        child.e.forEach((chIndex, strId) => {
+        child.$.forEach((chIndex, strId) => {
           if(chIndex === 0) {
             results.push(strId);
           }
@@ -410,16 +410,16 @@ export class Suffixer {
       let node = nodeInfo[0];
       let nodeDepth = nodeInfo[1];
 
-      node.c.forEach((edge) => {
+      node.e.forEach((edge) => {
         if(edge.length) {
           let child = edge[3];
 
-          if(child.c) {
+          if(child.e) {
             let edgeLength = edge[2] - edge[1];
             let currentDepth = nodeDepth + edgeLength;
             frames.push([child, currentDepth]);
           }
-        } else if(edge.c) {
+        } else if(edge.e) {
           frames.push([edge, nodeDepth + 1]);
         }
       });
@@ -445,7 +445,7 @@ export class Suffixer {
     for(let nodeInfo; nodeInfo = frames.shift();) {
       let node = nodeInfo[0];
       
-      node.c.forEach((edge, common) => {
+      node.e.forEach((edge, common) => {
         let parent = nodeInfo[1];
         let fullCommon = (parent?.common || '');
  
@@ -458,11 +458,11 @@ export class Suffixer {
 
         fullCommon += common;
         
-        if(child.c) {
-          let childCount = child.c.size;
+        if(child.e) {
+          let childCount = child.e.size;
           let current = {common: fullCommon, parent, strData: new Map(), childCount};
 
-          child.e?.forEach((chIndex, strId) => current.strData.set(strId, [chIndex]));
+          child.$?.forEach((chIndex, strId) => current.strData.set(strId, [chIndex]));
           frames.push([child, current]);
         } else {
           let strData = new Map();
@@ -471,7 +471,7 @@ export class Suffixer {
           if(typeof child === 'number') {
             strData.set(strId, [child]);
           } else {
-            child.e.forEach((chIndex, strId) => strData.set(strId, [chIndex]));
+            child.$.forEach((chIndex, strId) => strData.set(strId, [chIndex]));
           }
 
           while(parent && accumStrData.size < this.strings.length) {
@@ -531,8 +531,8 @@ export class Suffixer {
         let indices = [];
         let string = this.strings[0];
 
-        deepestNode.e?.forEach((index) => indices.push(index));
-        deepestNode.c.forEach((edge) => indices.push(edge[3]));
+        deepestNode.$?.forEach((index) => indices.push(index));
+        deepestNode.e.forEach((edge) => indices.push(edge[3]));
 
         return {
           indices,
@@ -559,11 +559,11 @@ export class Suffixer {
       let frames = [];
       
       do {
-        child.e?.forEach((chIndex, strId) => {
+        child.$?.forEach((chIndex, strId) => {
           (results[strId] ??= []).push(chIndex);
         });
 
-        child.c?.forEach((edge) => {
+        child.e?.forEach((edge) => {
           if(edge.length) {
             let strId = edge[0];
             let child = edge[3];
@@ -601,13 +601,13 @@ export class Suffixer {
       let frames = [];
       
       do {
-        child.e?.forEach((chIndex, strId) => {
+        child.$?.forEach((chIndex, strId) => {
           if(chIndex === 0) {
             results.push(strId);
           }
         });
 
-        child.c?.forEach((edge) => {
+        child.e?.forEach((edge) => {
           if(edge.length) {
             let strId = edge[0];
             let child = edge[3];

@@ -5,7 +5,7 @@ export function findDeepestNodeWithLink(tree, pattern) {
 
   for(var i = 0, {length} = pattern; i < length; ) {
     let ch = pattern[i];
-    let child = node.c.get(ch);
+    let child = node.e.get(ch);
 
     if(child.length) {
       let start = child[1];
@@ -41,7 +41,7 @@ export function getSuffixInfo(tree, suffix, node) {
 
   for(let i = 0; i < suffixLength; ) {
     let ch = suffix[i];
-    var chEntry = node.c?.get(ch);
+    var chEntry = node.e?.get(ch);
 
     if(chEntry) {
       if(chEntry.length) {
