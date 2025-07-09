@@ -1,6 +1,6 @@
 {
   "name": "suffixer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "heuristic-based linear-time generalized suffix tree builder with search functionalities",
   "main": "./dist/easy-data-state.js",
   "scripts": {

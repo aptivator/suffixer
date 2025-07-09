@@ -1,7 +1,7 @@
-import {baseNewLeafInfo, newLeafInfo} from './_lib/vars';
-
 export class Suffixer {
+  #baseNewLeafInfo = {};
   #configs = {returnStrings: true, includeIndices: true};
+  #newLeafInfo = {};
   root = {edges: new Map()};
   stringIds = [];
   strings = [];
@@ -31,7 +31,7 @@ export class Suffixer {
     Object.assign(this.#configs, configs);
   }
 
-  #getNewLeafInfo(node, strId, chIndex, leafInfo = baseNewLeafInfo) {
+  #getNewLeafInfo(node, strId, chIndex, leafInfo = this.#baseNewLeafInfo) {
     let edgeKey = this.strings[strId][chIndex];
     let leavesToAdd = 0;
     let offsetWithinEdge = 0;
@@ -101,6 +101,7 @@ export class Suffixer {
   }
 
   #updateNewLeafInfo(strId) {
+    let baseNewLeafInfo = this.#baseNewLeafInfo;
     let {node, edgeKey, edgeKeyIndex, offsetWithinEdge} = baseNewLeafInfo;
     let {unmatchedCh, unmatchedChIndex} = baseNewLeafInfo;
 
@@ -143,8 +144,8 @@ export class Suffixer {
       return baseNewLeafInfo;
     }
     
-    newLeafInfo.linkNode = node;
-    return this.#getNewLeafInfo(node, strId, unmatchedChIndex, newLeafInfo);
+    this.#newLeafInfo.linkNode = node;
+    return this.#getNewLeafInfo(node, strId, unmatchedChIndex, this.#newLeafInfo);
   }
  
   #addLeaf(leafInfo, strId, chIndex, strLength) {
@@ -195,6 +196,7 @@ export class Suffixer {
   }
 
   #matchAndAddLeaves(strId, chIndex, strLength) {
+    let baseNewLeafInfo = this.#baseNewLeafInfo;
     let newLeafInfo = this.#getNewLeafInfo(this.root, strId, chIndex);
     let {leavesToAdd} = newLeafInfo;
     let nextChIndex = chIndex + leavesToAdd;
