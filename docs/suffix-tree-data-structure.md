@@ -12,20 +12,19 @@ plain object (`{}`) that `suffixer` creates and can have up to three entries: `e
 `ends`, and `link`.  `edges` contains children edges.  `ends` stores string endings.  And
 `link` holds a suffix link.
 
-The root node has only children edges entry.  The `edges` is a JavaScript `Map` where key
-is the first character of the edge and the value is the edge information or just the
-edge's child node.  If an edge length is at least 2 characters, then edge information is
-an array.  Or, if an edge is a leaf (has no branches below it), then it can be 1
+The root node has only children edges entry.  The `edges` is a JavaScript `Map` where
+each key is the first character of the edge and the value is the edge information or just
+the edge's child node.  If an edge length is at least 2 characters, then edge information
+is an array.  Or, if an edge is a leaf (has no branches below it), then it can be 1
 character long and still be expressed as an array.  Consider `s` entry under the root's
 edge children (see the example below).  The corresponding `s` value is `[1, 3, 4, 3]`.
 The first number in the array is a string identifier.  The word `ways` is entered second,
-therefore its identifier is 1. The second and third values are start index and length of
-the designated string that would give us an entire string version of an edge.  In this
-case, within a word with the identifier of 1 we start at the fourth character (index of 3)
-and go until (but not including) the fifth character (length of 4).  This string slice
-from index 3 to 4 would be `s`.  The fourth number in the array is an index within a
-specified string from which an entire string path (from the root to the present edge) can
-be obtained.
+therefore its identifier is 1. The second and third values are starting index and the
+length of the designated string.  In this case, within a word with the identifier of 1,
+the edge starts at the fourth character (index of 3) and goes until (but not including)
+the fifth character (length of 4).  This string slice from index 3 to 4 would be `s`.
+The fourth number in the array is an index within a specified string from which an entire
+string path (from the root to the present edge) can be obtained.
 
 Consider `w` entry under root's edge children.  Its edge information is
 `[0, 0, 3, [edge child node]]`.  The full edge is found by taking word 0 (i.e., `way`)
@@ -48,8 +47,8 @@ edge `way` is the ending of string 0 and that ending begins at index 0.  In othe
 `a`-edge, its full string value is `ay` - substring from indices 1 to 3 of text 0.  The
 `a`-edge's child node also has `ends` endings entry.  The string identifier is also 0;
 however, the ending `ay` within the word `way` correctly begins at index 1.  `ends` entry
-is necessary when the an edge is an ending for multiple words and when an edge is a stem
-to other edges.  A leaf `edge` is in-and-of-itself an ending.  
+is necessary when an edge is an ending for multiple words and when an edge is a stem to
+other edges.  A leaf `edge` is in-and-of-itself an ending.  
 
 When an edge is a character long and has a child node, `suffixer` removes the array
 representation and associates the child node directly with the edge.  In this example,
