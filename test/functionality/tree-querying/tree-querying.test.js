@@ -99,7 +99,7 @@ describe('Suffix Tree Querying', () => {
       let strings = ['plus', 'plush', 'push', 'way'];
       let tree = new Suffixer(strings);
       let [deepestNode, depth] = tree.findDeepestNode();
-      expect(deepestNode).to.equal(tree.root.e.get('p').e.get('l')[3]);
+      expect(deepestNode).to.equal(tree.root.edges.get('p').edges.get('l')[3]);
       expect(depth).to.equal(4);
     });
 

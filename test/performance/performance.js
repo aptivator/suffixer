@@ -5,6 +5,11 @@ let {wordsShuffled}     = require('../_fixtures/words-shuffled');
 let {wordsShuffled5000} = require('../_fixtures/words-shuffled-5000-cjs');
 let {SuffixTree}        = require('./_lib/ukkonen');
 
+//let tree = new Suffixer(['way', 'ways', 'say', 'yfere', 'wayfare']);
+let tree = new Suffixer(['cleaner', 'lab', 'let', 'less', 'clean']);
+console.log(tree.root.e.get('l').e.get('e').e.get('a')[3].e);
+
+/*
 let piPath = path.resolve(__dirname, '../_fixtures/pi-million-digits.txt');
 let piDigits = fs.readFileSync(piPath, 'utf-8');
 let wordsLabel = 'Words add time';
@@ -75,3 +80,4 @@ for(let i = 0; i < searchIterations; i++) {
 console.timeEnd(searchLabel);
 console.log('A total of', searchResults.length, 'words matched');
 console.log();
+*/

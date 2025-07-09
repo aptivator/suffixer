@@ -77,7 +77,7 @@ describe('Suffix Tree Building', () => {
             expect(edgeStrId).to.equal(strId);
             expect(startingIndex).to.equal(strIndexForSuffix);
           } else {
-            expect(suffixesInfo.$.get(strId)).to.equal(strIndexForSuffix);
+            expect(suffixesInfo.ends.get(strId)).to.equal(strIndexForSuffix);
           }
         }
       }
@@ -108,11 +108,11 @@ describe('Suffix Tree Building', () => {
   
               expect(edgeStrId).to.equal(strId);
             } else {
-              startingIndex = suffixInfo.$.get(strId);
+              startingIndex = suffixInfo.ends.get(strId);
             }
   
             expect(startingIndex).to.equal(startingIndexToMatch++);
-            node = node.l;
+            node = node.link;
             iterations++;
           } while(--linksToTake);
 
