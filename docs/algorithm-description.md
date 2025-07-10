@@ -398,7 +398,7 @@ representation and replace it directly with the newly created edge node.
 
 After adding the `say` suffix, `matchAndAddLeaves()` returns the next character index of
 `1`.  The next call to the function and its call to `getNewLeafInfo()` will fully match
-the remaining `ay`-part of the word against the three and provide the following insertion
+the remaining `ay`-part of the word against the tree and provide the following insertion
 information.  `leavesToAdd` is `2`.  The `node` will no longer be the root, but rather
 the node at the end of the `a`-edge, because the entire `a`-edge was matched.
 `offsetWithinEdge` is `0` because character matching ended on the edge node.
