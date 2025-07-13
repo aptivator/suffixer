@@ -59,7 +59,7 @@ npm install --save suffixer
 
 ### Distributed Versions
 
-`suffixer`'s default import is either an EcmaScript (ES) or a CommonJS (as an UMD) module
+`suffixer`'s default export is either an EcmaScript (ES) or a CommonJS (as an UMD) module
 that bundles the source code without transpilation.  The library makes use of private
 class methods, latest native methods (e.g., `Array`'s `isArray`, `Object.hasOwn`), and
 data structures such as `Set` and `Map`.  The defaults are provided as such with the
