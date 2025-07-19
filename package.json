@@ -1,6 +1,6 @@
 {
   "name": "suffixer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "heuristic-based linear-time generalized suffix tree builder with search functionalities",
   "main": "./dist/easy-data-state.js",
   "scripts": {
@@ -20,6 +20,11 @@
   "bugs": {
     "url": "https://github.com/aptivator/suffixer/issues"
   },
+  "keywords": [
+    "suffix tree",
+    "Ukkonen",
+    "string search"
+  ],
   "devDependencies": {
     "@babel/cli": "~7.20.7",
     "@babel/core": "~7.20.7",
