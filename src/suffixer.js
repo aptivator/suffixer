@@ -100,8 +100,7 @@ export class Suffixer {
     return leafInfo;
   }
 
-  #updateNewLeafInfo(strId) {
-    let baseNewLeafInfo = this.#baseNewLeafInfo;
+  #updateNewLeafInfo(strId, baseNewLeafInfo) {
     let {node, edgeKey, edgeKeyIndex, offsetWithinEdge} = baseNewLeafInfo;
     let {unmatchedCh, unmatchedChIndex} = baseNewLeafInfo;
 
@@ -195,8 +194,7 @@ export class Suffixer {
     return linkNode || child;
   }
 
-  #matchAndAddLeaves(strId, chIndex, strLength) {
-    let baseNewLeafInfo = this.#baseNewLeafInfo;
+  #matchAndAddLeaves(strId, chIndex, strLength, baseNewLeafInfo) {
     let newLeafInfo = this.#getNewLeafInfo(this.root, strId, chIndex);
     let {leavesToAdd} = newLeafInfo;
     let nextChIndex = chIndex + leavesToAdd;
@@ -225,7 +223,7 @@ export class Suffixer {
           baseNewLeafInfo.offsetWithinEdge = leavesToAdd;
         }
 
-        newLeafInfo = this.#updateNewLeafInfo(strId);
+        newLeafInfo = this.#updateNewLeafInfo(strId, baseNewLeafInfo);
       }
     }
 
@@ -237,7 +235,7 @@ export class Suffixer {
     this.stringIds.push(strId);
 
     for(let chIndex = 0, {length} = string; chIndex < length; ) {
-      chIndex = this.#matchAndAddLeaves(strId, chIndex, length);
+      chIndex = this.#matchAndAddLeaves(strId, chIndex, length, this.#baseNewLeafInfo);
     }
 
     return strId;

@@ -10,7 +10,7 @@
   * [Building a Suffix Tree](#building-a-suffix-tree)
     * [Instantiating a Suffix Tree](#instantiating-a-suffix-tree)
     * [Augmenting a Suffix Tree](#augmenting-a-suffix-tree)
-    * [Available Constructor Data](#available-constructor-data)
+    * [Available Instance Data](#available-instance-data)
   * [Changing Suffix Tree Configurations](#changing-suffix-tree-configurations)
   * [Querying a Suffix Tree](#querying-a-suffix-tree)
     * [Selecting Strings that Include a Substring](#selecting-strings-that-include-a-substring)
@@ -30,22 +30,22 @@
 
 ## Introduction
 
-`suffixer` adopts Ukkonen's algorithm to build generalized (i.e., multi-string)
-suffix trees.  The latter are cornerstone data structures for text analysis.
-The library implements a heuristic approach that organizes each tree construction
-operation topically in accordance with the operation's purpose.  Suffix tree
-algorithms are not the easiest to understand and build.  "Intuitive" arrangement
-is employed to make the implementation more understandable.  `suffixer` is not just
-an educational or a demonstration utility.  The library was written primarily for
-production and uses a number of optimizations to efficiently build and query suffix
-trees.  For example, multiple strings are handled without separators and are stored
-individually.  This makes augmenting and searching a tree only a matter of traversal
-devoid of extraneous delimiter-related steps.  For performance reasons, `Map`s,
-instead of plain objects (`{}`), are used to store edges' (paths between nodes) and
-string endings' information.  Edges that have a child node and are 1-character long
-are represented only as a character key in a respective map without other information
-such as edge's start, stop, and string identifier.  `suffixer` also works with "complex"
-characters (e.g., emojis) that take multiple bytes of storage.
+Suffix tree is a hierarchical grouping of all possible strings' endings.  `suffixer`
+adopts Ukkonen's algorithm to build generalized (i.e., multi-string) suffix trees.  The
+latter are cornerstone data structures for text analysis.  The library implements a
+heuristic approach that organizes each tree construction operation topically in
+accordance with the operation's purpose.  Suffix tree algorithms are not the easiest to
+understand and build.  "Intuitive" arrangement is employed to make the implementation
+more understandable.  `suffixer` is not just an educational or a demonstration utility.
+The library was written primarily for production and uses a number of optimizations to
+efficiently build and query suffix trees.  Multiple strings are handled without
+separators and are stored individually.  This makes augmenting and searching a tree only
+a matter of traversal devoid of extraneous delimiter-related steps.  For performance
+reasons, JavaScript `Map`s, instead of plain objects (`{}`), are used to store edges'
+(paths between nodes) and string endings' information.  Edges that have a child node and
+are 1-character long are represented only as a character key in a respective map without
+other information such as edge's start, stop, and string identifier.  `suffixer` also
+works with "complex" characters (e.g., emojis [🙂]) that take multiple bytes of storage.
 
 ## Installation 
 
@@ -59,7 +59,7 @@ npm install --save suffixer
 
 ### Distributed Versions
 
-`suffixer`'s default export is either an EcmaScript (ES) or a CommonJS (as an UMD) module
+`suffixer`'s default export is either an EcmaScript (ES) or a CommonJS (as a UMD) module
 that bundles the source code without transpilation.  The library makes use of private
 class methods, latest native methods (e.g., `Array`'s `isArray`, `Object.hasOwn`), and
 data structures such as `Set` and `Map`.  The defaults are provided as such with the
@@ -130,7 +130,7 @@ an identifier or an array of identifiers, respectively, of the added string(s).
 ```javascript
 let configs = {includeIndices: false};
 let tree = new Suffixer(configs);
-let strId = tree.addString('way'); // strId = 0
+let strId = tree.addString('way'); // 0
 ```
 
 *Adding Strings to a Suffix Tree*
@@ -138,13 +138,13 @@ let strId = tree.addString('way'); // strId = 0
 let configs = {includeIndices: false};
 let strings = ['way', 'ways'];
 let tree = new Suffixer(configs);
-let strIds = tree.addStrings(strings); // strIds = [0, 1];
+let strIds = tree.addStrings(strings); // [0, 1];
 ```
 
-#### Available Constructor Data
+#### Available Instance Data
 
 Three data can be accessed from a suffix tree instance: `root`, `strings`, and `stringIds`.
-`root` is a root node that is an entry point into a tree.  `strings` is an array of all texts
+`root` is a node that is an entry point into a tree.  `strings` is an array of all texts
 composing a suffix tree.  `stringIds` are internal identifiers of entered strings and are
 primarily used by `excludes()` method.
 
@@ -168,7 +168,7 @@ tree.setConfigs({returnStrings: false});
 method returns an array of results.  Each result is an array containing a string
 that includes a searched-for substring plus indices at which a pattern occurs.
 When nothing is found, the function returns an empty array.  `includes()` also
-takes an optional configurations' parameter that just for the method's invocation
+takes an optional configurations' parameter that just for a method's invocation
 will override a tree's global settings.
 
 *Selecting Strings that Include a String Pattern*
@@ -196,7 +196,7 @@ let results = tree.includes('stop'); // []
 
 `startsWith()` searches for strings that begin with a specified pattern.  When
 a search is fruitful, the function returns an array of matches.  No indices are
-provided.  By implication a pattern would start at an index of 0.  The method also
+provided.  By implication a pattern would start at the index of 0.  The method also
 takes a configurations' parameter that can instruct to return only string identifiers.
 When no matches are found, an empty array is produced.
 
@@ -229,7 +229,7 @@ results = tree.endsWith('ly') // []
 match a search string and then removes these strings' identifiers
 from a set of all string identifiers.  Given this approach, `excludes()`
 is the second slowest query function.  Performance tests show that finding
-words out of 370105 that exclude a character `a` takes a little over a second.
+words out of 370,105 that exclude a character `a` takes a little over a second.
 Results of course will vary depending on the hardware.  The function
 returns just the strings or string identifiers that do not have a search
 pattern or an empty array when there are no exclusion results.
@@ -255,10 +255,10 @@ let results = tree.equals('way', {returnStrings: false}); // [0]
 
 #### Determining the Longest Repeating Substring
 
-`findLongestRepeating()` looks for a longest substring that occurs more
+`findLongestRepeating()` looks for the longest substring that occurs more
 than once.  The function will error if a tree is built with more than one
-distinct string.  When successful, the method produces an object that contains
-a repeating substring plus indices at which the substring starts.  Running
+string.  When successful, the method produces an object that contains a
+repeating substring plus indices at which the substring starts.  Running
 this search on a string without repeats will return `undefined`.
 
 *Looking for the Longest Repeating Substring*
@@ -285,8 +285,8 @@ let results = tree.findLongestRepeating(); // undefined
 all strings that are in a suffix tree.  If such a substring exists, the function
 returns an object with `strData` and `common` entries.  `strData` is an array of
 words plus indices for each word at which the common substring begins.  It is
-possible for a word to have more than one substring that occurs across all words
-in a tree.  `common` is the actual substring.  `findLongestCommon()` is the slowest
+possible for a word to have more than one lengthiest substring that occurs across all
+words in a tree.  `common` is the actual substring.  `findLongestCommon()` is the slowest
 query function.  It finds the deepest internal nodes and walks up to their parents
 until an internal node is encountered under which various suffixes of all strings
 fall.  Performance tests show that finding a common substring across 5000 words
@@ -354,12 +354,12 @@ some comparisons.  That project directly implements Ukkonen's algorithm for
 generalized trees.  The package concatenates all strings together separated
 by a delimiter.  Build and query tests show this to be not an efficient
 approach.  `suffixer` can build a tree of 370,105 dictionary words in less
-than four seconds.  The delimited approach takes 10s of minutes.  When ingesting
-just one very large string, `suffixer` is about a third faster than a typical
-Ukkonen implementation.  Using `Map`s instead of plain objects contributes to
-speed boost.  This library minimizes some function calls and eliminates full edge
-representation for 1-character edges that have child nodes further improving
-performance.
+than four seconds.  The delimited approach (on the same machine) takes 10s of
+minutes.  When ingesting just one very large string, `suffixer` is about a third
+faster than a typical Ukkonen implementation.  Using `Map`s instead of plain
+objects contributes to speed boost.  This library minimizes some function calls
+and eliminates full edge representation for 1-character edges that have child
+nodes further improving performance.
 
 Run the following command to see performance tests.
 
