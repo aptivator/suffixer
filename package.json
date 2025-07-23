@@ -24,7 +24,8 @@
   "keywords": [
     "suffix tree",
     "Ukkonen",
-    "string search"
+    "string search",
+    "common substring"
   ],
   "devDependencies": {
     "@babel/cli": "~7.20.7",
