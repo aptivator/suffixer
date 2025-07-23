@@ -1,6 +1,6 @@
 {
   "name": "suffixer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "heuristic-based linear-time generalized suffix tree builder with search functionalities",
   "main": "./dist/easy-data-state.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "test": "mocha ./test/**/*.test.js --require @babel/register --timeout 10000",
     "test:coverage": "c8 --reporter=text npm run test",
     "dev": "npm test && run-when-changed --watch \"src/**/*.js\" --watch \"test/**/*.js\" --exec \"npm test\"",
-    "dev:coverage": "npm run test:coverage && run-when-changed --watch \"src/**/*.js\" --watch \"test/**/*.js\" --exec \"npm run test:coverage\""
+    "dev:coverage": "npm run test:coverage && run-when-changed --watch \"src/**/*.js\" --watch \"test/**/*.js\" --exec \"npm run test:coverage\"",
+    "version": "npm version --no-git-tag-version --"
   },
   "author": "Dmitriy A. Nesterkin",
   "license": "BSD-3-Clause",

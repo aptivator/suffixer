@@ -103,7 +103,7 @@ let tree = new Suffixer(string);
 *Initializing a Suffix Tree with an Array of Strings*
 ```javascript
 let strings = ['way', 'ways'];
-let tree = new Suffixer(string);
+let tree = new Suffixer(strings);
 ```
 
 *Invoking a Suffix Tree with Configurations*
