@@ -24,15 +24,15 @@ Ukkonen's suffix tree construction algorithm, in its
 [academic format](./ukkonen-1995-on-line-construction-of-suffix-trees.pdf), is unlikely
 to be readily accessible for most readers.  The terminology employed plus the terseness
 of the language make it challenging to understand and implement an otherwise
-interesting approach.  Probably the most helpful resources are videos that take one step
-by step through a suffix tree construction: [video 1](https://www.youtube.com/watch?v=yg8Rkv8WLSg)
-and [video 2](https://www.youtube.com/watch?v=aPRqocoBsFQ).  Many such instructionals
-adopt the original terminology (e.g., active point) and are predominantly single-string
-focused.  The distinct purpose of this write-up is to provide a step-by-step outline and
-description of generalized (i.e., multi-string) suffix tree construction.  The
-differentiating and hopefully helpful feature of this explanation is its highlighting of
-the changes in an actual underlying data structure rather than a visualization of an
-expanding suffix tree.
+interesting approach.  Probably the most helpful resources to grasp the essence of the
+process are videos that take one step by step through a suffix tree construction:
+[video 1](https://www.youtube.com/watch?v=yg8Rkv8WLSg) and [video 2](https://www.youtube.com/watch?v=aPRqocoBsFQ).
+Many such instructionals adopt the original terminology (e.g., active point) and are
+predominantly single-string focused.  The distinct purpose of this write-up is to provide
+a step-by-step outline and description of generalized (i.e., multi-string) suffix tree
+construction.  The differentiating and hopefully helpful feature of this explanation is
+its highlighting of the changes in an actual underlying data structure rather than a
+visualizing of an expanding suffix tree.
 
 ## Disclaimer
 
@@ -57,7 +57,7 @@ Besides the `node` and the `edge`, `suffixer` also uses concepts of the `ending`
 which strings end with a substring represented by a total edge that goes from the top of
 a tree (i.e., from the root node) all the way through to the node that has the `ending`s'
 entries.  The map links a string identifier to the character index of the string from
-which an `ending` starts.  An `ending` does not require an explicit representation.
+which an `ending` starts.  An `ending` does not always require an explicit representation.
 Every `leaf` - an `edge` that does not lead to a node - is an ending.  A suffix `link`,
 if available, should connect a node to another node such that the total edge above the
 second node is exactly one character less (from the top) compared to the total edge
@@ -106,18 +106,20 @@ that indicates how many characters to offset within an edge (that matches a part
 string) before splitting it in order to add a new leaf.  For this iteration, no edge
 matched a part of the `way` string and therefore the `offsetWithinEdge` is `0`.  This
 means that a new edge will be added directly to the `node`, which, for this scenario, is
-the root node.  The addition is done by `addLeaf()` method that inserts a `w`-starting
-edge to the root.  An edge information is a four-part array that contains a word
-identifier (`0`), edge starting index (`unmatchedChIndex` of `0`), word length (`3`), and
-an index from which the full edge (from the root through the current edge) can be
-obtained (`0`).  The inserted edge will be `[0, 0, 3, 0]`.  The array specifies to take a
-slice from index 0 up to (but not including) index 3 from the word with the identifier of 0.
-This would give a string value of this edge, which is `way`.  To obtain the full edge all
-the way from the root, the word with an identifier of 0 is taken and a substring starting
-with the index 0 is extracted.  This gives a full edge that is also `way`.  As the tree
-grows, the edges like these are likely to get split.  This is why the fourth parameter,
-although redundant in this case, is important to include. After the addition, the suffix
-tree should look as follows.
+the root node.
+
+The addition is done by `addLeaf()` method that inserts a `w`-starting edge to the root.
+An edge information is a four-part array that contains a word identifier (`0`), edge
+starting index (`unmatchedChIndex` of `0`), word length (`3`), and an index from which
+the full edge (from the root through the current edge) can be obtained (`0`).  Thus, the
+inserted edge will be `[0, 0, 3, 0]`.  The array specifies to take a slice from index 0
+up to (but not including) index 3 from the word with the identifier of 0. This would give
+a string value of this edge, which is `way`.  To obtain the full edge, all the way from
+the root, the word with an identifier of 0 is taken and a substring starting with the
+index 0 is extracted.  This gives a full edge that is also `way`.  As the tree grows, the
+edges like these are likely to get split.  This is why the fourth parameter, although
+redundant in this case, is important to include. After the addition, the suffix tree
+should look as follows.
 
 *Suffix Tree After Adding the `w`-edge*
 ```
@@ -163,11 +165,11 @@ attempts to match as much of `ways` as possible within the tree.  `getNewLeafInf
 starts from the root node and proceeds to match its entire `w`-edge.  The function will
 produce the following already-described data: `leavesToAdd` of 3, because 3 characters of
 `ways` matched within the tree, `unmatchedCh` of `s`, `unmatchedChIndex` of 3,
-`offsetWithinEdge` of 3, and the root `node`.  `getNewLeafInfo()` should also return the
+`offsetWithinEdge` of 3, and the root `node`.  `getNewLeafInfo()` will also return the
 following new data: `edge`, `edgeKey`, and `unmatchedEdgeCh`.  `edge` is the deepest edge
 (i.e., `[0, 0, 3, 0]`) within which the final part of a string match was made. This datum
 is provided for convenience purposes to minimize edge map reads.  `edgeKey` is a
-character key within the returned node that references the provided `edge`.  Sometimes
+character key within the returned node that references the provided `edge`.  Sometimes,
 when a new suffix is added, an existing edge information has to be modified and written
 back to the map.  This operation requires a reference key.  `unmatchedEdgeCh` is a
 character of the edge that did not align with the `unmatchedCh` of the string that is
@@ -175,30 +177,31 @@ being added.  All of the characters of the existing `w`-edge were matched, becau
 edge fully represents the previously added word `way`.  The `unmatchedEdgeCh` is
 therefore `undefined` because, in this case, the `unmatchedCh` of `s` occurs just beyond
 the length of the `w`-edge.  Use of `undefined`s is an important convention.  At the end
-of every string there is an implicit `undefined` natively available in JavaScript.
+of every string there is an implicit `undefined` available natively in JavaScript.
 `undefined`, as a language primitive, will never occur in a string as is.  This is why
 `suffixer` does not use any special characters (e.g., `$`) to mark word endings.
 Encountering  `unmatchedCh` and/or `unmatchedEdgeCh` as `undefined` indicates that a word
 ending(s) must be added.
 
-The `w`-edge has to be split to include the `ways` suffix.  The first thing that must be
-determined is a point within an existing edge where a split must occur.  The point is
-calculated by taking an edge's starting index and adding an `offsetWithinEdge` to it.
-For this case, the edge information stays the same, i.e., starting index of `0` plus
-`offsetWithinEdge` of `3` gives the same ending index of `3`.  An insertion of a node at
-the end of an edge is required because the edge would now lead to two leaves.  The
-`unmatchedEdgeCh` is `undefined` and instructs `suffixer` to add the endings map to the
-newly created node.  The endings are stored under the `ends` key.  The endings' map's key
-is a string identifier and a value is an index within the identified string from which
-the ending begins.  The word `way` (identifier of 0) ends with the `way` suffix and that
-ending begins at index 0.  The latter value was the fourth parameter in the previous
-entry for the `w`-edge (i.e., `[0, 0, 3, 0]`).  The `unmatchedCh` is not `undefined`, but
-is an actual character `s`.  This tells `suffixer` to create the edges entry under the
-new node.  Within the edges map, the `s`-edge is added.  This edge is a leaf and
-represented by the array `[1, 3, 4, 0]`.  Again, the first parameter is a string
-identifier.  The next two are the edge's starting index (indicated by `unmatchedChIndex`
-of `3`) and the length of a string.  The fourth value is an index (within an identified
-text) from which the full edge, beginning from the root, can be obtained.
+The `w`-edge has to be split to add a node that will include the `ways` suffix.  The
+first thing that must be determined is a point within an existing edge where a separation
+must occur.  The point is calculated by taking an edge's starting index and adding an
+`offsetWithinEdge` to it.  For this case, the edge information stays the same, i.e.,
+starting index of `0` plus `offsetWithinEdge` of `3` gives the same ending index of `3`.
+An insertion of a node at the end of an edge is required because the edge would now lead
+to two leaves.  The `unmatchedEdgeCh` is `undefined` and instructs `suffixer` to add the
+endings map to the newly created node.  The endings are stored under the `ends` key.  The
+endings' map's key is a string identifier and a value is an index within the identified
+string from which the ending begins.  The word `way` (identifier of 0) ends with the
+`way` suffix and that ending begins at index 0.  The latter value was the fourth
+parameter in the previous entry for the `w`-edge (i.e., `[0, 0, 3, 0]`).  The
+`unmatchedCh` is not `undefined`, but is an actual character `s`.  This tells `suffixer`
+to create the edges entry under the new node.  Within the edges map, the `s`-edge is
+added.  This edge is a leaf and represented by the array `[1, 3, 4, 0]`.  Again, the first
+parameter is a string identifier.  The next two are the edge's starting index (indicated
+by `unmatchedChIndex` of `3`) and the length of a string.  The fourth value is an index
+(within an identified text) from which the full edge, beginning from the root, can be
+obtained.
 
 *Suffix Tree After Adding the Suffix `ways`*
 ```
@@ -227,19 +230,20 @@ duration of the `matchAndAddLeaves()` call.  Before the next addition starts,
 `updateNewLeafInfo()` is called to further "normalize" the information that will guide
 the creation of the next suffix.  As suffixes are added, during a `matchAndAddLeaves()`
 call, each subsequent suffix's entirety gets closer and closer to the root node (because
-suffixes get shorter).  Consequently, the information (e.g., `offsetWithinEdge`, `node`)
-that guided the creation of one suffix may not stay the same for the next one.  Suppose
-that adding some first suffix entailed a direct insertion of an `unmatchedCh`-edge into a
-node.  As subsequent suffixes are added, one may find that an edge that starts with an
-`unmatchedCh` already exists under a node.  Or, an `offsetWithinEdge` may be updated to,
-say, `4`, yet an appropriate edge, within which a split has to be made, may have a length
-of, say, only `2`.  Such situations are common-place as a generalized suffix tree grows.
-This requires suffix insertion information adjustments and `updateNewLeafInfo()`
-accomplishes that.  The function is different from `getNewLeafInfo()` in that it does not
-traverse a suffix tree by comparing edge characters to string characters.  Instead, when
-an `offsetWithinEdge` is greater than 0, `updateNewLeafInfo()` navigates a suffix tree by
-"hopping" over the entire edges.  This allows updating the appropriate insertion
-information faster.  The function is similar to Ukkonen's `canonize()` procedure.
+suffixes get shorter).  Consequently, the new leaf information (e.g., `offsetWithinEdge`,
+`node`) may need further adjustment to properly guide the addition of the next suffix.
+Suppose that adding some first suffix entailed a direct insertion of an
+`unmatchedCh`-edge into a node.  As subsequent suffixes are added, one may find that an
+edge that starts with an `unmatchedCh` already exists under a node.  Or, an
+`offsetWithinEdge` may be updated to, say, `4`, yet an appropriate edge, within which a
+split has to be made, may have a length of, say, only `2`.  Such situations are
+common-place as a generalized suffix tree grows.  This requires suffix insertion
+information adjustments and `updateNewLeafInfo()` accomplishes that.  The function is
+different from `getNewLeafInfo()` in that it does not traverse a suffix tree by comparing
+edge characters to string characters.  Instead, when an `offsetWithinEdge` is greater
+than 0, `updateNewLeafInfo()` navigates a suffix tree by "hopping" over the entire edges.
+This allows updating the appropriate insertion information faster.  The function is
+similar to Ukkonen's `canonize()` procedure.
 
 For this iteration, `updateNewLeafInfo()` will only adjust the `edge`.  The insertion
 information for the next addition is the following: root `node`, `a` `edgeKey`, `edge` of
@@ -319,8 +323,8 @@ performance.
 ```
 
 All of the leaves that needed to be added during this call of `matchAndAddLeaves()` have
-been added.  The function terminates and returns the next character index of `3`
-(previous index of `0` plus `leavesToAdd` of `3`).  Within `addString()`, 
+been inserted.  The function completes and returns the next character index of `3`
+(previous index of `0` plus the initial `leavesToAdd` of `3`).  Within `addString()`, 
 `matchAndAddLeaves()` is called afresh to see how much of the `ways` string beginning
 with the character `s` matches against the tree.  There is no `s`-edge under the root
 node.  The edge is then added by the `addLeaf()`.
@@ -665,7 +669,7 @@ Consider the following brand-new tree consisting of suffixes for the words `clea
 }
 ```
 
-Suppose that suffixes of the new word `clean` need to be added to the tree.  Checking
+Suppose that the suffixes of the new word `clean` need to be added to the tree.  Checking
 the word against the structure would reveal that `clean` is wholly subsumed within the
 root node's `c`-edge.  The insertion information would be as follows.  `leavesToAdd`
 is `5`, because 5 characters matched against the tree.  `unmatchedCh` is `undefined`.
@@ -694,26 +698,25 @@ Previously selected `node` was root and, by definition, it has no links and is k
 it is.  The `edgeKey` is set to the next character (`l`) and `offsetWithinEdge` is
 decremented by `1` to `4`.  This indicates that the next suffix insertion is to happen
 within the root node's `l`-edge at the depth of 4 characters.  The `l`-edge, however, is
-only one character deep.  The `l`-edge's node's `e`-edge child is also one character
-deep.  To obtain the correct insertion information `updateNewLeafInfo()` will have to "hop"
-over the edges that are shorter than the `offsetWithinEdge`.  With every edge "hop" the
+only one character deep.  The `l`-edge's node's `e`-edge is also one character deep.  To
+obtain the correct insertion information `updateNewLeafInfo()` will have to "hop" over
+the edges that are shorter than the `offsetWithinEdge`.  With every edge "hop" the
 `offsetWithinEdge` gets decreased by the edge's length.  When "hopping" over multiple
 edges, within each edge's child node, a correct `edgeKey` has to be selected to keep the
 "hopping" on a correct path that represents a suffix that is to be added.  `edgeKeyIndex`
 control variable is used to accomplish that.  The parameter represents an index (within a
 string that is being added) of the `edgeKey`.  When a "hop" happens a new `edgeKey` within
 an edge's node is determined by taking `edgeKeyIndex`, adding edge length to it to obtain
-a new `edgeKeyIndex`, and then accessing a character of an added string that is at that
+the new `edgeKeyIndex`, and then accessing a character of an added string that is at that
 new index.  This allows faster skipping over the edges without reading the entirety of an
-edge, which is what the `getNewLeafInfo()` does.
+edge, which is what `getNewLeafInfo()` does.
 
-After the two "hops", the `node` is set to the one under the `l`-`e`-edge.  `edgeKey` is
-set to `a`.  `offsetWithinEdge` is adjusted to `2`.  `edge` is `[0, 3, 7, 1]`.
-`unmatchedCh` remains the same at `undefined`.  And, `unmatchedEdgeCh` remains the same at
-`e`.  Using the information directs addition of one ending and one edge.  We can see, from
-the snippet below, that `lean` suffix is an ending within the word `clean` correctly
-beginning at index 1.  And, `leaner` suffix occurs within the word `cleaner` starting at
-index 1.
+After two "hops", the `node` is set to the one under the `l`-`e`-edge.  `edgeKey` is set
+to `a`.  `offsetWithinEdge` is adjusted to `2`.  `edge` is `[0, 3, 7, 1]`. `unmatchedCh`
+remains the same at `undefined`.  And, `unmatchedEdgeCh` remains the same at `e`.  Using
+the information one ending and one edge are added.  We can see, from the snippet below,
+that `lean` suffix is an ending within the word `clean` correctly beginning at index 1.
+And, `leaner` suffix occurs within the word `cleaner` starting at index 1.
 
 *Suffix Tree After Adding the `lean` Suffix*
 ```
@@ -750,16 +753,16 @@ index 1.
 The multi-string online linear construction of suffix trees presented here is different
 from Ukkonen's algorithm in the level of explication and, hopefully, also clarity of the
 implemented process.  The functions were abstracted to their specific purpose and named
-as precisely as currently feasible.  There are no `s`, `k`, `p`, and `i` variables.
-Instead, there are `node`, `offsetWithinEdge`, `unmatchedCh`, etc.  There is no concept
-of an active point, but rather a collective data state with various control variables
-that guide insertion of new suffixes and future updates to the said state.  Hopefully the
+as precisely as was feasible.  There are no `s`, `k`, `p`, and `i` variables.  Instead,
+there are `node`, `offsetWithinEdge`, `unmatchedCh`, etc.  There is no concept of an
+active point, but rather a collective data state with various control variables that
+guide the insertion of new suffixes and future updates to the said state.  Hopefully the
 extra "verbosity" provides the extra traction to grasp the procedure.  The difficulty of
 an overall algorithm gets compounded when various combinations of strings that compose a
 tree are considered.  Other explanations of the approach predominantly focus on suffixing
 just one string (e.g., `xyzxyaxyz`).  Documenting suffix additions of several strings in
 a row into the same tree should more greatly clarify the algorithm's steps.  That clarity
 should be further enhanced by the use of a tree data structure specifically designed to
-store multiple strings.  The algorithm is not easy.  Perhaps the explications here and
-the [implementation itself](../src/suffixer.js) are a little bit easier to understand and
-to work with.
+store multiple texts.  The algorithm is not trivial.  Perhaps the explications here and
+the [implementation itself](../src/suffixer.js) make the approach a little bit easier to
+understand and to work with.
